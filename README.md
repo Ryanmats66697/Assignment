@@ -32,22 +32,10 @@ On Linux/Mac:
   Copy code
   source venv/bin/activate
 
-On Windows:
 
-  bash
-  Copy code
-  venv\Scripts\activate
+3. **Navigate to the manage.py Folder**
 
-
-3. **Database Setup**
-
-The repository includes an SQLite database (db.sqlite3), so no additional database setup is required. You can simply use the existing database.
-
-However, if you want to reset the database or apply new migrations, you can run the following command:
-
-  bash
-  Copy code
-  python manage.py migrate
+cd project/rule_engine
 
 
 4.**Start the Development Server**

@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import RuleViewSet
+from .views import RuleViewSet, UserProfileViewSet, index  # Import index here
 
 router = DefaultRouter()
 router.register(r'rules', RuleViewSet)
+router.register(r'users', UserProfileViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('evaluate/', RuleViewSet.as_view({'post': 'evaluate'}), name='evaluate'),
+    path('', index, name='index'),  # Ensure the index view is accessible
+    path('api/', include(router.urls)),  # Keep this line to include the router URLs
 ]

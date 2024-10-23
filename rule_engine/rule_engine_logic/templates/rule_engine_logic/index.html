@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Engine</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f4f4f4;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        form {
+            margin: 15px 0;
+        }
+        #evaluation-result {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .error {
+            color: red;
+        }
+        .loading {
+            font-style: italic;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rule Engine</h1>
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <section>
+        <h2>Evaluate Rule</h2>
+        <form id="evaluate-form">
+            <label for="user_id">Select User:</label>
+            <select id="user_id" required aria-label="Select User"></select>
+
+            <label for="rule_id">Select Rule:</label>
+            <select id="rule_id" required aria-label="Select Rule"></select>
+
+            <button type="submit">Evaluate</button>
+        </form>
+        <h3 id="evaluation-result"></h3>
+    </section>
+
+    <section>
+        <h2>Rules</h2>
+        <ul id="rules-list"></ul>
+        <div class="error" id="rules-error"></div>
+    </section>
+
+    <section>
+        <h2>Add New Rule</h2>
+        <form id="rule-form">
+            <label for="rule_string">Rule:</label>
+            <input type="text" id="rule_string" required placeholder="Enter your rule here" aria-label="Rule String">
+            <button type="submit">Add Rule</button>
+        </form>
+        <div class="error" id="add-rule-error"></div>
+    </section>
+
+    <section>
+        <h2>User Profiles</h2>
+        <ul id="user-profiles-list"></ul>
+        <div class="error" id="users-error"></div>
+    </section>
+
+    <script>
+        $(document).ready(function() {
+            // Function to fetch and display rules
+            function fetchRules() {
+                $('#rules-list').html('<li class="loading">Loading rules...</li>');
+                $.ajax({
+                    url: '/api/api/rules/',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#rules-list').empty();
+                        $('#rule_id').empty();
+                        if (data.length === 0) {
+                            $('#rules-list').append('<li>No rules found.</li>');
+                        } else {
+                            data.forEach(function(rule) {
+                                $('#rules-list').append('<li data-id="' + rule.id + '">' + rule.rule_string + '</li>');
+                                $('#rule_id').append('<option value="' + rule.id + '">' + rule.rule_string + '</option>');
+                            });
+                        }
+                    },
+                    error: function(error) {
+                        console.error("Error fetching rules:", error);
+                        $('#rules-error').text("Failed to load rules. Please try again.");
+                    }
+                });
+            }
+
+            // Function to fetch and display user profiles
+            function fetchUserProfiles() {
+                $('#user-profiles-list').html('<li class="loading">Loading user profiles...</li>');
+                $.ajax({
+                    url: '/api/api/users/',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#user-profiles-list').empty();
+                        $('#user_id').empty();
+                        if (data.length === 0) {
+                            $('#user-profiles-list').append('<li>No user profiles found.</li>');
+                        } else {
+                            data.forEach(function(user) {
+                                $('#user-profiles-list').append('<li>User (Age: ' + user.age + ', Income: ' + user.income + ', Department: ' + user.department + ')</li>');
+                                $('#user_id').append('<option value="' + user.id + '">' + user.age + ' (' + user.income + ')</option>');
+                            });
+                        }
+                    },
+                    error: function(error) {
+                        console.error("Error fetching user profiles:", error);
+                        $('#users-error').text("Failed to load user profiles. Please try again.");
+                    }
+                });
+            }
+
+            // Fetch rules and user profiles on page load
+            fetchRules();
+            fetchUserProfiles();
+
+            // Add CSRF token to all AJAX requests
+            const csrftoken = $('meta[name="csrf-token"]').attr('content');
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+
+            // Handle form submission to add a new rule
+            $('#rule-form').on('submit', function(event) {
+                event.preventDefault();
+                const ruleString = $('#rule_string').val().trim();
+
+                $.ajax({
+                    url: '/api/api/rules/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ rule_string: ruleString }),
+                    success: function() {
+                        $('#rule_string').val('');
+                        fetchRules();
+                        $('#add-rule-error').text('');
+                    },
+                    error: function(error) {
+                        console.error("Error adding rule:", error);
+                        $('#add-rule-error').text("Failed to add the rule. Please try again.");
+                    }
+                });
+            });
+
+            // Handle evaluation form submission
+            $('#evaluate-form').on('submit', function(event) {
+                event.preventDefault();
+                const userId = $('#user_id').val();
+                const ruleId = $('#rule_id').val();
+
+                $.ajax({
+                    url: '/api/api/rules/evaluate/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ rule_id: ruleId, data: { id: userId } }),
+                    success: function(response) {
+                        $('#evaluation-result').text('Evaluation Result: ' + response.result);
+                    },
+                    error: function(error) {
+                        console.error("Error evaluating rule:", error);
+                        $('#evaluation-result').text("Failed to evaluate the rule. Please try again.");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

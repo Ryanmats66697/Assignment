@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Weather Data</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .no-data {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+        .weather-icon {
+            width: 50px; /* Adjust icon size */
+            height: 50px; /* Adjust icon size */
+            margin-bottom: 10px; /* Add some spacing below the icon */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Weather App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'weather_summary' %}">Daily Summary</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Recent Weather Data</h1>
+        <div class="row">
+            {% if recent_data %}
+                {% for data in recent_data %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ data.city }}</h5>
+                            {% if data.icon %}
+                                <img src="http://openweathermap.org/img/wn/{{ data.icon }}@2x.png" alt="{{ data.condition }}" class="weather-icon">
+                            {% else %}
+                                <img src="http://openweathermap.org/img/wn/01d@2x.png" alt="default" class="weather-icon"> <!-- Fallback icon -->
+                            {% endif %}
+                            <p class="card-text">
+                                <strong>Temperature:</strong> {{ data.temperature|floatformat:2 }}°C<br>
+                                <strong>Condition:</strong> {{ data.condition }}<br>
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">Timestamp: {{ data.timestamp|date:"D, d M Y H:i" }}</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 no-data">
+                    <p>No recent weather data available.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

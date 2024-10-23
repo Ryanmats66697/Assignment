@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Weather Summary</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .high-temp {
+            background-color: #f8d7da; /* Light red background for high temperatures */
+        }
+        .low-temp {
+            background-color: #d1ecf1; /* Light blue background for low temperatures */
+        }
+        .normal-temp {
+            background-color: #e2e3e5; /* Light gray background for normal temperatures */
+        }
+        .weather-icon {
+            width: 50px; /* Adjust icon size */
+            height: 50px; /* Adjust icon size */
+            vertical-align: middle; /* Align icon with text */
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Weather App</a>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'recent_weather' %}">Recent Weather</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Daily Weather Summary</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+<!--        <div class="form-group">-->
+<!--            <label for="city">Select a City:</label>-->
+<!--            <select name="city" id="city" class="form-control">-->
+<!--                <option value="">&#45;&#45; Choose a City &#45;&#45;</option>-->
+<!--                {% for city in cities %}-->
+<!--                    <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>-->
+<!--                {% endfor %}-->
+<!--            </select>-->
+<!--        </div>-->
+        <div class="form-group">
+            <label for="threshold">Temperature Threshold (°C):</label>
+            <input type="number" name="threshold" id="threshold" class="form-control" placeholder="Enter temperature threshold" value="{{ temperature_threshold }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Check</button>
+    </form>
+
+    <div class="row mt-4">
+        {% for summary in summaries %}
+            <div class="col-md-4 mb-4">
+                {% if summary.avg_temperature > temperature_threshold %}
+                    <div class="card high-temp">
+                {% elif summary.avg_temperature < temperature_threshold %}
+                    <div class="card low-temp">
+                {% else %}
+                    <div class="card normal-temp">
+                {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ summary.city }}</h5>
+                        <p class="card-text">
+                            <!-- Display weather icon using icon_id -->
+                            {% if summary.icon_id %}
+                                <img src="http://openweathermap.org/img/wn/{{ summary.icon_id }}@2x.png"
+                                     alt="{{ summary.dominant_condition }}"
+                                     class="weather-icon"> <!-- Removed fallback icon -->
+                            {% endif %}
+
+                            <strong>Avg Temperature:</strong> {{ summary.avg_temperature|floatformat:2 }}°C<br>
+                            <strong>Max Temperature:</strong> {{ summary.max_temperature|floatformat:2 }}°C<br>
+                            <strong>Min Temperature:</strong> {{ summary.min_temperature|floatformat:2 }}°C<br>
+                            <strong>Dominant Condition:</strong> {{ summary.dominant_condition }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-center">No weather data available for the selected city.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

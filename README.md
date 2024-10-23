@@ -1,4 +1,4 @@
-# Rule Engine Application
+# Rule Engine Application & Weather App
 
 This is a rule engine application built using Django, allowing you to create, modify, and evaluate rules based on user profile data such as age, income, and department. The application comes with pre-configured virtual environment files and database, making setup easier.
 
@@ -65,3 +65,4 @@ Once the server is running, you can access the application via your web browser.
 
 API Base URL: http://127.0.0.1:8000/api/
 Django Admin: http://127.0.0.1:8000/admin/ (log in with your superuser credentials)
+Weather: http://127.0.0.1:8000/weather/
